@@ -9,9 +9,9 @@ use tauri::{State, Manager, AppHandle};
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
-fn greet(app_handle: AppHandle, name: &str) -> String {
+fn login(app_handle: AppHandle, username: &str, table: &str) -> String {
     // Should handle errors instead of unwrapping here
-    app_handle.db(|db| database::add_item(name, db)).unwrap();
+    app_handle.db(|db| database::add_item(table, username, db)).unwrap();
 
     let items = app_handle.db(|db| database::get_all(db)).unwrap();
 
@@ -23,7 +23,7 @@ fn greet(app_handle: AppHandle, name: &str) -> String {
 fn main() {
     tauri::Builder::default()
         .manage(AppState { db: Default::default() })
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![login])
         .setup(|app| {
             let handle = app.handle();
 

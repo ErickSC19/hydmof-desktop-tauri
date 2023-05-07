@@ -63,15 +63,15 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) ->
   Ok(())
 }
 
-pub fn add_item(title: &str, db: &Connection) -> Result<(), rusqlite::Error> {
-    let mut statement = db.prepare("INSERT INTO items (title) VALUES (@title)")?;
-    statement.execute(named_params! { "@title": title })?;
+pub fn add_item(table: &str, values: &str, db: &Connection) -> Result<(), rusqlite::Error> {
+    let mut statement = db.prepare("INSERT INTO @table (values) VALUES (@values)")?;
+    statement.execute(named_params! { "@table": table, "@values": values })?;
 
     Ok(())
 }
 
 pub fn get_all(db: &Connection) -> Result<Vec<String>, rusqlite::Error> {
-    let mut statement = db.prepare("SELECT * FROM items")?;
+    let mut statement = db.prepare("SELECT * FROM admins")?;
     let mut rows = statement.query([])?;
     let mut items = Vec::new();
     while let Some(row) = rows.next()? {
