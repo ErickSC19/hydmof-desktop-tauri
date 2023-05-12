@@ -1,6 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use surrealdb::{Surreal, engine::local::File};
+
 mod database;
 mod state;
 
@@ -31,6 +33,8 @@ fn register(app_handle: AppHandle, email: &str, password: &str) -> String {
 
     format!("Your name log: {}", items_string)
 }
+
+#[tokio::main]
 fn main() {
     tauri::Builder::default()
         .manage(AppState { db: Default::default() })
@@ -46,4 +50,21 @@ fn main() {
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+struct ApplicationContext {
+    action_dispatchers: HashMap<String, Arc<dyn ActionDispatcher + Sync + Send>>
+}
+
+impl ApplicationContext {
+    async fn new() -> Self { 
+        let surreal_db = Surreal::new::<File>("testdata/surreal/umlboard.db").await.unwrap();
+        surreal_db.use_ns("umlboard_namespace").use_db("umlboard_database").await.unwrap();
+        let repository = Box::new(SurrealRepository::new(Box::new(surreal_db), "classifiers"));
+        let service = Arc::new(ClassifierService::new(repository));
+        let mut action_dispatchers: HashMap<String, Arc<dyn ActionDispatcher + Sync + Send>> = HashMap::new();
+        action_dispatchers.insert(actions::classifier_action::CLASSIFIER_DOMAIN.to_string(), service.clone());
+        action_dispatchers.insert(actions::application_action::APPLICATION_DOMAIN.to_string(), service.clone());
+        Self { action_dispatchers }
+    }
 }
