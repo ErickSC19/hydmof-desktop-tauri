@@ -1,19 +1,25 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+extern crate argon2;
+extern crate rand;
+extern crate uuid;
+
 mod database;
 mod state;
 
+mod controllers;
+
 use state::{AppState, ServiceAccess};
 use tauri::{State, Manager, AppHandle};
+use uuid::Uuid;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
 fn login(app_handle: AppHandle, username: &str, password: &str) -> String {
     // Should handle errors instead of unwrapping here
     app_handle.db(|db| database::add_item(password, username, db)).unwrap();
-
-    let items = app_handle.db(|db| database::get_all(db)).unwrap();
+    let items = app_handle.db(|db| database::get_all(db, "admins")).unwrap();
 
     let items_string = items.join(" | ");
 
@@ -24,13 +30,13 @@ fn login(app_handle: AppHandle, username: &str, password: &str) -> String {
 fn register(app_handle: AppHandle, email: &str, password: &str) -> String {
     // Should handle errors instead of unwrapping here
     app_handle.db(|db| database::add_item(password, email, db)).unwrap();
-
-    let items = app_handle.db(|db| database::get_all(db)).unwrap();
+    let items = app_handle.db(|db| database::get_all(db, "admins")).unwrap();
 
     let items_string = items.join(" | ");
 
     format!("Your name log: {}", items_string)
 }
+
 fn main() {
     tauri::Builder::default()
         .manage(AppState { db: Default::default() })

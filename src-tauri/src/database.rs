@@ -35,16 +35,16 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) ->
         "
         CREATE TABLE IF NOT EXISTS admins
             (
-                adminId                 INTEGER PRIMARY KEY AUTOINCREMENT,
+                admin_id                TEXT PRIMARY KEY NOT NULL,
                 username                TEXT                NOT NULL,
-                password                TEXT                NOT NULL,
+                upassword               TEXT                NOT NULL,
                 email                   TEXT                NOT NULL,
                 token                   TEXT                        ,
                 confirmed               BOOLEAN             NOT NULL DEFAULT 0
             );    
         CREATE TABLE IF NOT EXISTS years
             (
-                yearId                       INTEGER PRIMARY KEY AUTOINCREMENT,
+                year_id                      TEXT PRIMARY KEY NOT NULL,
                 fromDate                     DATETIME NOT NULL DEFAULT (datetime('now','localtime')),
                 toDate                       DATETIME NOT NULL DEFAULT (datetime('now','localtime')),
                 complete                     BOOLEAN  NOT NULL DEFAULT 0,
@@ -53,7 +53,7 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) ->
                 createdAt                    DATETIME DEFAULT (datetime('now','localtime')),
                 updatedAt                    DATETIME DEFAULT (datetime('now','localtime')),
                 adminId                      INTEGER  NOT NULL DEFAULT 1,
-                FOREIGN KEY (adminId)        REFERENCES admins (adminId) ON UPDATE SET NULL ON DELETE SET NULL
+                FOREIGN KEY (admin_d)        REFERENCES admins (admin_id) ON UPDATE SET NULL ON DELETE SET NULL
             );"
     )?;
 
@@ -70,7 +70,7 @@ pub fn add_item(table: &str, values: &str, db: &Connection) -> Result<(), rusqli
     Ok(())
 }
 
-pub fn get_all(db: &Connection) -> Result<Vec<String>, rusqlite::Error> {
+pub fn get_all(db: &Connection, table: &str) -> Result<Vec<String>, rusqlite::Error> {
     let mut statement = db.prepare("SELECT * FROM admins")?;
     let mut rows = statement.query([])?;
     let mut items = Vec::new();
@@ -82,3 +82,5 @@ pub fn get_all(db: &Connection) -> Result<Vec<String>, rusqlite::Error> {
   
     Ok(items)
 }
+
+
