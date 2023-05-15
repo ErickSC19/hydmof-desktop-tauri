@@ -8,6 +8,87 @@ a {
   @apply hover:text-cyan-300;
 }
 
+
+/* Tooltip */
+.tooltip {
+  @apply shadow-md;
+  @apply rounded;
+  @apply p-1;
+  @apply text-sm;
+  width: 128px;
+  text-align: center;
+  border-bottom-width: 4px;
+ 
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 10;
+}
+
+.tooltipleft {
+  top: -5px;
+  right: 110%;
+}
+.tooltipleft::after {
+  content: " ";
+  position: absolute;
+  top: 50%;
+  left: 100%; /* To the right of the tooltip */
+  margin-top: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent transparent black;
+}
+
+.tooltipright {
+  top: -5px;
+  left: 110%;
+}
+.tooltipright::after {
+  content: " ";
+  position: absolute;
+  top: 50%;
+  right: 100%; /* To the left of the tooltip */
+  margin-top: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent black transparent transparent;
+}
+
+.tooltiptop {
+  @apply box-border;
+  width: 128px;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -64px;
+}
+.tooltiptop::after {
+  content: " ";
+  position: absolute;
+  top: calc(100% + 4px); /* At the bottom of the tooltip */
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
+
+.tooltipbottom {
+  width: 128px;
+  top: 110%;
+  left: 50%;
+  margin-left: -64px; /* Use half of the width (120/2 = 60), to center the tooltip */
+}
+.tooltipbottom::after {
+  content: " ";
+  position: absolute;
+  bottom: calc(100%);  /* At the top of the tooltip */
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent black transparent;
+}
+
 .wavy-top {
   background-color: rgba(184, 214, 65, 0.103);
   --mask:

@@ -2,7 +2,6 @@ import { createSignal } from "solid-js";
 import { Router, Routes, Route } from "@solidjs/router";
 import logo from "./assets/logo.svg";
 import { invoke } from "@tauri-apps/api/tauri";
-import "./App.css";
 import FinLayout from "./layout/FinLayout";
 import Login from "./pages/Login";
 import AuthLayout from "./layout/AuthLayout";

@@ -4,7 +4,7 @@ use argon2::{
 };
 pub mod helpers;
 pub mod models;
-use models::users::User;
+use models::admins::Admin;
 use helpers::generate_token::new_token;
 use helpers::email::send_email;
 use rusqlite::{named_params, Connection, OptionalExtension};
@@ -19,7 +19,7 @@ pub fn add_user(
     email: &str,
 ) -> Result<String, rusqlite::Error> {
     let mut msg: String = String::new();
-    let sql = format!("SELECT * FROM admins WHERE email = {}", email);
+    let sql = format!("SELECT * FROM admins WHERE email = '{}'", email);
     let mut prp = db.prepare(&sql)?;
     if prp.exists([]).unwrap() == false {
         let uid: String = Uuid::new_v4().to_string();
@@ -30,9 +30,9 @@ pub fn add_user(
             .hash_password(password.as_bytes(), &salt)
             .expect("error")
             .to_string();
-        let mut statement = db.prepare("INSERT INTO users (admin_id, username, email, upassword, token) VALUES (@id, @user, @email, @pass, @token)")?;
+        let mut statement = db.prepare("INSERT INTO admins (admin_id, username, email, upassword, token) VALUES (@id, @user, @email, @pass, @token)")?;
         statement.execute(
-          named_params! { "@id": uid,"@user": username, "@emai": email, "@pass":  password_hash, "@token": token},
+          named_params! { "@id": uid,"@user": username, "@email": email, "@pass":  password_hash, "@token": token},
       )?;
 
       let email_body = format!("Su cuenta ya esta registrada, su codigo de confirmación es este: {} \nSi esta cuenta no es tuya, solo ignora este correo", token);  
@@ -46,10 +46,10 @@ pub fn add_user(
 
 pub fn confirm_admin(conn: &Connection, uemail: &str, tcancel: Option<String>) -> Result<String, String> {
     let mut msg: String = String::new();
-    let sql = format!("SELECT * FROM admins WHERE email = {}", uemail);
+    let sql = format!("SELECT * FROM admins WHERE email = '{}'", uemail);
     let mut prp = conn.prepare(&sql).expect("error preparing query");
-    let admin: Option<User> = prp.query_row([], |row| {
-        Ok(User {            
+    let admin: Option<Admin> = prp.query_row([], |row| {
+        Ok(Admin {            
             admin_id: row.get(0).unwrap(),
             username: row.get(1).unwrap(),
             email: row.get(2).unwrap(),
@@ -73,10 +73,10 @@ pub fn confirm_admin(conn: &Connection, uemail: &str, tcancel: Option<String>) -
 }
 
 pub fn admin_login(db: &Connection, email: &str, password: &str) -> Result<String, Box<dyn std::error::Error>>{
-    let sql = format!("SELECT * FROM admins WHERE email = {}", email);
+    let sql = format!("SELECT * FROM admins WHERE email = '{}'", email);
     let mut prp = db.prepare(&sql).expect("error preparing query");
-    let admin : Option<User> = prp.query_row([], |row| {
-        Ok(User {            
+    let admin : Option<Admin> = prp.query_row([], |row| {
+        Ok(Admin {            
             admin_id: row.get(0).unwrap(),
             username: row.get(1).unwrap(),
             email: row.get(2).unwrap(),

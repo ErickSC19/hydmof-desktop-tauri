@@ -11,13 +11,18 @@
   },
   "license": "GNU GPLv3",
   "dependencies": {
+    "@modular-forms/solid": "^0.14.0",
     "@solid-devtools/overlay": "^0.6.0",
     "@solidjs/router": "^0.8.2",
     "@tanstack/solid-table": "^8.8.5",
     "@tauri-apps/api": "^1.2.0",
     "apexcharts": "^3.39.0",
     "solid-apexcharts": "^0.2.4",
-    "solid-js": "^1.7.0"
+    "solid-heroicons": "^3.1.1",
+    "solid-js": "^1.7.0",
+    "solid-zustand": "^1.5.0",
+    "zod": "^3.21.4",
+    "zustand": "^4.3.8"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",

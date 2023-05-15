@@ -2,7 +2,7 @@ use serde::{Serialize, Deserialize};
 use rusqlite::{Row};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct User {
+pub struct Admin {
     pub admin_id: Option<String>,
     pub username: Option<String>,
     pub email: String,
@@ -11,7 +11,7 @@ pub struct User {
     pub confirmed: Option<i8>
 }
 
-impl<'a> From<Row<'a>> for User {
+impl<'a> From<Row<'a>> for Admin {
     fn from(row: Row<'a>) -> Self {
         Self {
             admin_id: row.get(0).unwrap(),
