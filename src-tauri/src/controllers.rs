@@ -7,7 +7,7 @@ pub mod models;
 use models::users::User;
 use helpers::generate_token::new_token;
 use helpers::email::send_email;
-use rusqlite::{named_params, Connection};
+use rusqlite::{named_params, Connection, OptionalExtension};
 use serde_json::Value;
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -48,7 +48,7 @@ pub fn confirm_admin(conn: &Connection, uemail: &str, tcancel: Option<String>) -
     let mut msg: String = String::new();
     let sql = format!("SELECT * FROM admins WHERE email = {}", uemail);
     let mut prp = conn.prepare(&sql).expect("error preparing query");
-    let admin = prp.query_row([], |row| {
+    let admin: Option<User> = prp.query_row([], |row| {
         Ok(User {            
             admin_id: row.get(0).unwrap(),
             username: row.get(1).unwrap(),
@@ -57,19 +57,48 @@ pub fn confirm_admin(conn: &Connection, uemail: &str, tcancel: Option<String>) -
             token: row.get(4).unwrap(),
             confirmed: row.get(5).unwrap(),
         })
-    }).expect("No se encontro ese usuario");
-
-    if admin.token == tcancel {
-        let mut upstmnt = conn.prepare("UPDATE admins SET token = NULL, confirmed = true WHERE admin_id = @id").expect("error preparing query");
-        upstmnt.execute(named_params! { "@id": admin.admin_id }).expect("No se encontro ese usuario");
-        msg = "passed".to_string();
-    } else {
-        msg = "codigo incorrecto".to_string();
-    }
+    }).optional().unwrap();
+    if let Some(admin) = admin {
+        if admin.token == tcancel {
+            let mut upstmnt = conn.prepare("UPDATE admins SET token = NULL, confirmed = true WHERE admin_id = @id").expect("error preparing query");
+            upstmnt.execute(named_params! { "@id": admin.admin_id }).expect("No se encontro ese usuario");
+            msg = "passed".to_string();
+        } else {
+            msg = "codigo incorrecto".to_string();
+        }
+     } else {
+        msg = "no se encontró el usuario".to_string();
+     }
     Ok(msg)
 }
 
-pub fn add_item(table: &str, values: &str, db: &Connection) -> Result<(), rusqlite::Error> {
+pub fn admin_login(db: &Connection, email: &str, password: &str) -> Result<String, Box<dyn std::error::Error>>{
+    let sql = format!("SELECT * FROM admins WHERE email = {}", email);
+    let mut prp = db.prepare(&sql).expect("error preparing query");
+    let admin : Option<User> = prp.query_row([], |row| {
+        Ok(User {            
+            admin_id: row.get(0).unwrap(),
+            username: row.get(1).unwrap(),
+            email: row.get(2).unwrap(),
+            upassword: row.get(3).unwrap(),
+            token: row.get(4).unwrap(),
+            confirmed: row.get(5).unwrap(),
+        })
+    }).optional().unwrap();
+    if let Some(admin) = admin {
+        if admin.confirmed == Some(1) {
+            let parsed_hash = PasswordHash::new(admin.upassword.as_str()).expect("No se encontro ese usuario");
+            Argon2::default().verify_password(password.as_bytes(), &parsed_hash).unwrap();
+            Ok("Si".to_string())
+        } else {
+            Err("admin account not confirmed".into())
+        }
+    } else {
+        Err("admin not found".into())
+    }
+}
+
+pub fn add_item(db: &Connection, table: &str, values: &str) -> Result<(), rusqlite::Error> {
     let mut statement = db.prepare("INSERT INTO @table (values) VALUES (@values)")?;
     statement.execute(named_params! { "@table": table, "@values": values })?;
 

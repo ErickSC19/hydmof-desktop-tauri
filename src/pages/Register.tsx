@@ -19,6 +19,7 @@ const Register: Component<{}> = (props) => {
       const res = await invoke('register', { email: email(), password: password(), username: username() })
       if (res === 'pass') {
         setAlert( (alert) => ({ failed: false, msg: "Registro completado, revisa tu email para obtener tu codigo", show: true }));
+        localStorage.setItem("em", `${email()}`);
         navigate('/Confirmar')
       } else {
         setAlert( (alert) => ({ failed: false, msg: `${res}`, show: true }));
