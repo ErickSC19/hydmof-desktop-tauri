@@ -3,19 +3,18 @@ use rusqlite::{Row};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {
-    #[serde(rename = "userId")]
-    user_id: Option<String>,
-    username: Option<String>,
-    email: String,
-    upassword: String,
-    token: Option<String>,
-    confirmed: Option<bool>
+    pub admin_id: Option<String>,
+    pub username: Option<String>,
+    pub email: String,
+    pub upassword: String,
+    pub token: Option<String>,
+    pub confirmed: Option<i8>
 }
 
-impl From<&Row<'_>> for User {
-    fn from(row: &Row) -> Self {
+impl<'a> From<Row<'a>> for User {
+    fn from(row: Row<'a>) -> Self {
         Self {
-            user_id: row.get(0).unwrap(),
+            admin_id: row.get(0).unwrap(),
             username: row.get(1).unwrap(),
             email: row.get(2).unwrap(),
             upassword: row.get(3).unwrap(),
@@ -24,3 +23,4 @@ impl From<&Row<'_>> for User {
         }
     }
 }
+

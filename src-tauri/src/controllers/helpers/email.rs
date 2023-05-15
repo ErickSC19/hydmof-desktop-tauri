@@ -4,15 +4,14 @@ use lettre::{Message, SmtpTransport, Transport};
 use dotenv::dotenv;
 use tracing_subscriber;
 
-pub fn send_email(email_content: &str) {
+pub fn send_email(email_content: &str, receiver: &str, name: &str, subject: &str) {
     dotenv().ok(); 
     tracing_subscriber::fmt::init();
-
+    let tosend = format!("{} <{}>", name, receiver);
     let email = Message::builder()
-        .from("NoBody <nobody@domain.tld>".parse().unwrap())
-        .reply_to("Yuin <yuin@domain.tld>".parse().unwrap())
-        .to("Hei <hei@domain.tld>".parse().unwrap())
-        .subject("Happy new year")
+        .from("Hydromotors".parse().unwrap())
+        .to(tosend.parse().unwrap())
+        .subject(subject)
         .header(ContentType::TEXT_PLAIN)
         .body(String::from(email_content))
         .unwrap();

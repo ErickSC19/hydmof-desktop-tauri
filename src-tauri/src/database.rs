@@ -1,4 +1,4 @@
-use rusqlite::{Connection, named_params};
+use rusqlite::{Connection};
 use tauri::AppHandle;
 use std::fs;
 
@@ -35,26 +35,60 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) ->
         "
         CREATE TABLE IF NOT EXISTS admins
             (
-                admin_id                TEXT PRIMARY KEY NOT NULL,
+                admin_id                TEXT   PRIMARY KEY  NOT NULL,
                 username                TEXT                NOT NULL,
                 upassword               TEXT                NOT NULL,
                 email                   TEXT                NOT NULL,
                 token                   TEXT                        ,
-                confirmed               BOOLEAN             NOT NULL DEFAULT 0
+                confirmed               INTEGER             NOT NULL DEFAULT 0 CHECK (confirmed IN (0, 1))
             );    
         CREATE TABLE IF NOT EXISTS years
             (
-                year_id                      TEXT PRIMARY KEY NOT NULL,
-                fromDate                     DATETIME NOT NULL DEFAULT (datetime('now','localtime')),
-                toDate                       DATETIME NOT NULL DEFAULT (datetime('now','localtime')),
-                complete                     BOOLEAN  NOT NULL DEFAULT 0,
-                months                       INTEGER NOT NULL,
-                employees                    INTEGER NOT NULL,
-                createdAt                    DATETIME DEFAULT (datetime('now','localtime')),
-                updatedAt                    DATETIME DEFAULT (datetime('now','localtime')),
-                adminId                      INTEGER  NOT NULL DEFAULT 1,
-                FOREIGN KEY (admin_d)        REFERENCES admins (admin_id) ON UPDATE SET NULL ON DELETE SET NULL
-            );"
+                year_id                      TEXT     PRIMARY KEY NOT NULL,
+                fromDate                     TEXT NOT NULL DEFAULT (2023-01-01 10:20:05.123),
+                toDate                       TEXT NOT NULL DEFAULT (2023-01-01 10:20:05.123),
+                complete                     INTEGER  NOT NULL DEFAULT 0 CHECK (confirmed IN (0, 1)),
+                months                       INTEGER  NOT NULL,
+                employees                    INTEGER  NOT NULL,
+                created_at                   TEXT DEFAULT (2023-01-01 10:20:05.123),
+                updated_at                   TEXT DEFAULT (2023-01-01 10:20:05.123),
+                admin_id                     TEXT  NOT NULL,
+                FOREIGN KEY (admin_id)       REFERENCES admins (admin_id) ON UPDATE CASCADE ON DELETE SET NULL
+            );
+        CREATE TABLE IF NOT EXISTS year_data
+            (
+                ydata_id                     TEXT PRIMARY KEY NOT NULL,
+                description                  TEXT NOT NULL,
+                value                        REAL NOT NULL,
+                category                     INTEGER NOT NULL,
+                created_at                   TEXT DEFAULT (2023-01-01 10:20:05.123),
+                updated_at                   TEXT DEFAULT (2023-01-01 10:20:05.123),
+                year_id                      TEXT  NOT NULL,
+                FOREIGN KEY (year_id)        REFERENCES years (year_id) ON UPDATE CASCADE ON DELETE SET NULL
+            );
+        CREATE TABLE IF NOT EXISTS month_data
+            (
+                mdata_id                     TEXT PRIMARY KEY NOT NULL,
+                value                        REAL NOT NULL,
+                month                        INTEGER NOT NULL,
+                created_at                   TEXT DEFAULT (2023-01-01 10:20:05.123),
+                updated_at                   TEXT DEFAULT (2023-01-01 10:20:05.123),
+                exp_id                       TEXT NOT NULL,
+                year_id                      TEXT NOT NULL,
+                FOREIGN KEY (year_id)        REFERENCES years (year_id) ON UPDATE CASCADE ON DELETE SET NULL,
+                FOREIGN KEY (exp_id)         REFERENCES exp_data (exp_id) ON UPDATE CASCADE ON DELETE SET NULL
+            );
+        CREATE TABLE IF NOT EXISTS exp_data
+            (
+                exp_id                       TEXT PRIMARY KEY NOT NULL,
+                description                  TEXT NOT NULL,
+                value                        TEXT NOT NULL,
+                created_at                   TEXT DEFAULT (2023-01-01 10:20:05.123),
+                updated_at                   TEXT DEFAULT (2023-01-01 10:20:05.123),
+                admin_id                     TEXT  NOT NULL,
+                FOREIGN KEY (admin_id)       REFERENCES admins (admin_id) ON UPDATE CASCADE ON DELETE SET NULL,
+            );
+            "
     )?;
 
     tx.commit()?;
@@ -62,25 +96,3 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) ->
 
   Ok(())
 }
-
-pub fn add_item(table: &str, values: &str, db: &Connection) -> Result<(), rusqlite::Error> {
-    let mut statement = db.prepare("INSERT INTO @table (values) VALUES (@values)")?;
-    statement.execute(named_params! { "@table": table, "@values": values })?;
-
-    Ok(())
-}
-
-pub fn get_all(db: &Connection, table: &str) -> Result<Vec<String>, rusqlite::Error> {
-    let mut statement = db.prepare("SELECT * FROM admins")?;
-    let mut rows = statement.query([])?;
-    let mut items = Vec::new();
-    while let Some(row) = rows.next()? {
-      let title: String = row.get("title")?;
-  
-      items.push(title);
-    }
-  
-    Ok(items)
-}
-
-
