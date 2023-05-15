@@ -14,10 +14,16 @@ const Register: Component<{}> = (props) => {
   alert
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
-    //if (password() === rePassword()) {
-    //  invoke('register', { email: email(), password: password(), username: username() })
-    //}
-    //navigate('/Confirmar')
+    setAlert( (alert) => ({ failed: true, msg: "adios", show: false }));
+    if (password() === rePassword()) {
+      const res = await invoke('register', { email: email(), password: password(), username: username() })
+      if (res === 'pass') {
+        setAlert( (alert) => ({ failed: false, msg: "Registro completado, revisa tu email para obtener tu codigo", show: true }));
+        navigate('/Confirmar')
+      } else {
+        setAlert( (alert) => ({ failed: false, msg: `${res}`, show: true }));
+      }
+    }
     setAlert( (alert) => ({ failed: true, msg: "adios", show: true }));
   }
   return (

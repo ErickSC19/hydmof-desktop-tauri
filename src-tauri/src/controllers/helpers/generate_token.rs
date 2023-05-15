@@ -6,7 +6,7 @@ pub fn new_token() -> String {
         .unwrap()
         .as_millis()
         .to_string();
-    let mut rng = rand::thread_rng();
+    let rng = rand::thread_rng();
     let rand_str: String = rng
         .sample_iter(&rand::distributions::Alphanumeric)
         .take(8)

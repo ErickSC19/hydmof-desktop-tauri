@@ -12,7 +12,12 @@
   },
   "tauri": {
     "allowlist": {
-      "all": false,
+      "fs": {
+        "all": true
+      },
+      "path": {
+        "all": true
+      },
       "shell": {
         "all": false,
         "open": true
@@ -27,8 +32,9 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
-      "targets": "all"
+      "identifier": "com.hydmot.fin",
+      "targets": "all",
+      "category": "Business"
     },
     "security": {
       "csp": null

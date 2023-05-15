@@ -18,7 +18,7 @@ pub fn initialize_database(app_handle: &AppHandle) -> Result<Connection, rusqlit
     drop(user_pragma);
 
     upgrade_database_if_needed(&mut db, existing_user_version)?;
-
+    println!("---> successful connection");
     Ok(db)
 }
 
@@ -40,30 +40,31 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) ->
                 upassword               TEXT                NOT NULL,
                 email                   TEXT                NOT NULL,
                 token                   TEXT                        ,
-                confirmed               INTEGER             NOT NULL DEFAULT 0 CHECK (confirmed IN (0, 1))
+                confirmed               INTEGER             NOT NULL DEFAULT 0 
+                                                                CHECK (confirmed == 0 OR confirmed == 1)
             );    
         CREATE TABLE IF NOT EXISTS years
             (
                 year_id                      TEXT     PRIMARY KEY NOT NULL,
-                fromDate                     TEXT NOT NULL DEFAULT (2023-01-01 10:20:05.123),
-                toDate                       TEXT NOT NULL DEFAULT (2023-01-01 10:20:05.123),
-                complete                     INTEGER  NOT NULL DEFAULT 0 CHECK (confirmed IN (0, 1)),
-                months                       INTEGER  NOT NULL,
-                employees                    INTEGER  NOT NULL,
-                created_at                   TEXT DEFAULT (2023-01-01 10:20:05.123),
-                updated_at                   TEXT DEFAULT (2023-01-01 10:20:05.123),
-                admin_id                     TEXT  NOT NULL,
+                fromDate                     TEXT NOT NULL DEFAULT ('2023-01-01 10:20:05.123'),
+                toDate                       TEXT NOT NULL DEFAULT ('2023-01-01 10:20:05.123'),
+                complete                     INTEGER  NOT NULL DEFAULT 0 CHECK (complete == 0 OR complete == 1),
+                months                       INTEGER  NOT NULL DEFAULT 0,
+                employees                    INTEGER  NOT NULL DEFAULT 0,
+                created_at                   TEXT NOT NULL DEFAULT ('2023-01-01 10:20:05.123'),
+                updated_at                   TEXT NOT NULL DEFAULT ('2023-01-01 10:20:05.123'),
+                admin_id                     TEXT NOT NULL,
                 FOREIGN KEY (admin_id)       REFERENCES admins (admin_id) ON UPDATE CASCADE ON DELETE SET NULL
             );
         CREATE TABLE IF NOT EXISTS year_data
             (
                 ydata_id                     TEXT PRIMARY KEY NOT NULL,
                 description                  TEXT NOT NULL,
-                value                        REAL NOT NULL,
+                value                        REAL NOT NULL DEFAULT 0.0,
                 category                     INTEGER NOT NULL,
-                created_at                   TEXT DEFAULT (2023-01-01 10:20:05.123),
-                updated_at                   TEXT DEFAULT (2023-01-01 10:20:05.123),
-                year_id                      TEXT  NOT NULL,
+                created_at                   TEXT NOT NULL DEFAULT ('2023-01-01 10:20:05.123'),
+                updated_at                   TEXT NOT NULL DEFAULT ('2023-01-01 10:20:05.123'),
+                year_id                      TEXT NOT NULL,
                 FOREIGN KEY (year_id)        REFERENCES years (year_id) ON UPDATE CASCADE ON DELETE SET NULL
             );
         CREATE TABLE IF NOT EXISTS month_data
@@ -71,8 +72,8 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) ->
                 mdata_id                     TEXT PRIMARY KEY NOT NULL,
                 value                        REAL NOT NULL,
                 month                        INTEGER NOT NULL,
-                created_at                   TEXT DEFAULT (2023-01-01 10:20:05.123),
-                updated_at                   TEXT DEFAULT (2023-01-01 10:20:05.123),
+                created_at                   TEXT DEFAULT ('2023-01-01 10:20:05.123'),
+                updated_at                   TEXT DEFAULT ('2023-01-01 10:20:05.123'),
                 exp_id                       TEXT NOT NULL,
                 year_id                      TEXT NOT NULL,
                 FOREIGN KEY (year_id)        REFERENCES years (year_id) ON UPDATE CASCADE ON DELETE SET NULL,
@@ -83,10 +84,10 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) ->
                 exp_id                       TEXT PRIMARY KEY NOT NULL,
                 description                  TEXT NOT NULL,
                 value                        TEXT NOT NULL,
-                created_at                   TEXT DEFAULT (2023-01-01 10:20:05.123),
-                updated_at                   TEXT DEFAULT (2023-01-01 10:20:05.123),
-                admin_id                     TEXT  NOT NULL,
-                FOREIGN KEY (admin_id)       REFERENCES admins (admin_id) ON UPDATE CASCADE ON DELETE SET NULL,
+                created_at                   TEXT NOT NULL DEFAULT ('2023-01-01 10:20:05.123'),
+                updated_at                   TEXT NOT NULL DEFAULT ('2023-01-01 10:20:05.123'),
+                admin_id                     TEXT NOT NULL,
+                FOREIGN KEY (admin_id)       REFERENCES admins (admin_id) ON UPDATE CASCADE ON DELETE SET NULL
             );
             "
     )?;

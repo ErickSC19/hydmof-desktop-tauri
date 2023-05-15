@@ -37,7 +37,7 @@ pub fn add_user(
 
       let email_body = format!("Su cuenta ya esta registrada, su codigo de confirmación es este: {} \nSi esta cuenta no es tuya, solo ignora este correo", token);  
       send_email(&email_body, email, username, "Confirmar cuenta");
-        msg = "Revisa tu correo para verificar tu cuenta".to_string();
+        msg = "passed".to_string();
     } else {
         msg = "El correo ya esta en uso".to_string();
     }
@@ -62,7 +62,7 @@ pub fn confirm_admin(conn: &Connection, uemail: &str, tcancel: Option<String>) -
     if admin.token == tcancel {
         let mut upstmnt = conn.prepare("UPDATE admins SET token = NULL, confirmed = true WHERE admin_id = @id").expect("error preparing query");
         upstmnt.execute(named_params! { "@id": admin.admin_id }).expect("No se encontro ese usuario");
-        msg = "Cuenta confirmada correctamente".to_string();
+        msg = "passed".to_string();
     } else {
         msg = "codigo incorrecto".to_string();
     }
