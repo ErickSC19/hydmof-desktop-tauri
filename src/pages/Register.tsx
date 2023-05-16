@@ -27,15 +27,18 @@ const Register: Component<{}> = (props) => {
     const { username, email, password, repassword } = values;
     if (password === repassword) {
       const res = await invoke('register', { email: email, password: password, username: username })
-      if (res === 'pass') {
+      if (res === 'passed') {
         setAlert((alert) => ({ state: "success", msg: "Registro completado, revisa tu email para obtener tu codigo", show: true }));
         localStorage.setItem("em", `${email}`);
-        navigate('/Confirmar')
+        setTimeout(() => {
+          navigate('/confirmar')
+        }, 1000);
       } else {
         setAlert((alert) => ({ state: "failed", msg: `${res}`, show: true }));
       }
+    } else {
+      setAlert((alert) => ({ state: "failed", msg: "Los campos de contraseña no coinciden", show: true }));
     }
-    setAlert((alert) => ({ state: "failed", msg: "Los campos de contraseña no coinciden", show: true }));
   }
   return (
     <div class="bg-white rounded-md border text-gray-900 border-slate-300 p-10 flex flex-col min-w-fit w-96 z-[5]">

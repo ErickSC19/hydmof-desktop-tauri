@@ -19,15 +19,13 @@ use tauri::{State, Manager, AppHandle};
 #[tauri::command]
 fn register(app_handle: AppHandle, email: &str, password: &str, username: &str) -> String {
     let msg = app_handle.db(|db| controllers::add_user(db, username, password, email, )).unwrap();
-
-    format!("{}", msg)
+    msg
 }
 
 #[tauri::command]
 fn confirm(app_handle: AppHandle, email: &str, code: Option<String>) -> String {
     let msg = app_handle.db(|db| controllers::confirm_admin(db, email, code)).unwrap();
-
-    format!("{}", msg)
+    msg
 }
 
 /* #[tauri::command]

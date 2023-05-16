@@ -18,7 +18,7 @@ pub fn add_user(
     password: &str,
     email: &str,
 ) -> Result<String, rusqlite::Error> {
-    let mut msg: String = String::new();
+    let mut _msg: String = String::new();
     let sql = format!("SELECT * FROM admins WHERE email = '{}'", email);
     let mut prp = db.prepare(&sql)?;
     if prp.exists([]).unwrap() == false {
@@ -36,16 +36,18 @@ pub fn add_user(
       )?;
 
       let email_body = format!("Su cuenta ya esta registrada, su codigo de confirmación es este: {} \nSi esta cuenta no es tuya, solo ignora este correo", token);  
-      send_email(&email_body, email, username, "Confirmar cuenta");
-        msg = "passed".to_string();
+      match send_email(&email_body, email, username, "Confirmar cuenta") {
+        Ok(_) => _msg = "passed".to_string(),
+        Err(e) => {_msg = "Error al enviar correo de confirmacion".to_string(); println!("Error sending email: {e:?}")}
+      };
     } else {
-        msg = "El correo ya esta en uso".to_string();
+        _msg = "El correo ya esta en uso".to_string();
     }
-    Ok(msg)
+    Ok(_msg)
 }
 
 pub fn confirm_admin(conn: &Connection, uemail: &str, tcancel: Option<String>) -> Result<String, String> {
-    let mut msg: String = String::new();
+    let mut _msg: String = String::new();
     let sql = format!("SELECT * FROM admins WHERE email = '{}'", uemail);
     let mut prp = conn.prepare(&sql).expect("error preparing query");
     let admin: Option<Admin> = prp.query_row([], |row| {
@@ -60,16 +62,19 @@ pub fn confirm_admin(conn: &Connection, uemail: &str, tcancel: Option<String>) -
     }).optional().unwrap();
     if let Some(admin) = admin {
         if admin.token == tcancel {
-            let mut upstmnt = conn.prepare("UPDATE admins SET token = NULL, confirmed = true WHERE admin_id = @id").expect("error preparing query");
-            upstmnt.execute(named_params! { "@id": admin.admin_id }).expect("No se encontro ese usuario");
-            msg = "passed".to_string();
+            let mut upstmnt = conn.prepare("UPDATE admins SET token = NULL, confirmed = true WHERE admin_id = '@id'").expect("error preparing query");
+            match upstmnt.execute(named_params! { "@id": admin.admin_id }) {
+                Ok(_) => _msg = "passed".to_string(),
+                Err(e) => {_msg = "Error durante la confirmación".to_string(); println!("Error on equery execute: {e:?}")}
+            }
+            
         } else {
-            msg = "codigo incorrecto".to_string();
+            _msg = "codigo incorrecto".to_string();
         }
      } else {
-        msg = "no se encontró el usuario".to_string();
+        _msg = "no se encontró el usuario".to_string();
      }
-    Ok(msg)
+    Ok(_msg)
 }
 
 pub fn admin_login(db: &Connection, email: &str, password: &str) -> Result<String, Box<dyn std::error::Error>>{
@@ -91,10 +96,10 @@ pub fn admin_login(db: &Connection, email: &str, password: &str) -> Result<Strin
             Argon2::default().verify_password(password.as_bytes(), &parsed_hash).unwrap();
             Ok("Si".to_string())
         } else {
-            Err("admin account not confirmed".into())
+            Err("cuenta no confirmada".into())
         }
     } else {
-        Err("admin not found".into())
+        Err("cuenta no encontrada".into())
     }
 }
 

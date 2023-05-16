@@ -24,7 +24,7 @@ const Login: Component<{}> = (props) => {
       <form action="" onsubmit={e => handleSubmit(e)} class="text-inherit flex flex-col mt-4">
         <input value={email()} type="email" placeholder="Correo" autocomplete="email" required onInput={e => setEmail(e.currentTarget.value)} class="focus:z-10 shadow-none box-border font-normal rounded-bl-none rounded-br-none text-inherit mt-4 px-3 py-2 w-full rounded-md border-slate-300 placeholder-slate-400" />
         <input value={password()} type="password" placeholder="Contraseña" required onInput={e => setPassword(e.currentTarget.value)} class="focus:z-10 shadow-none box-border font-normal rounded-tl-none rounded-tr-none text-inherit px-3 py-2 w-full rounded-md border-slate-300 placeholder-slate-400" />
-        <A href="/recuperar-pass" class="ml-auto text-sm mt-4">¿Olvidaste la contraseña?</A>
+        <A href="/recuperar-pass" class="ml-auto text-sm mt-4" onClick={() => localStorage.setItem("op", "new")}>¿Olvidaste la contraseña?</A>
         <input type="submit" value="Login" class="mt-4 flex w-full justify-center rounded-md bg-primary-800 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-primary-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700 hover:cursor-pointer" />
         <p class="mx-auto text-center mt-4 text-sm">¿No tienes cuenta? <br /> <A href="/registro">registrate aquí</A></p>
       </form>

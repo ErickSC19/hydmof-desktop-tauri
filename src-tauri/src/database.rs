@@ -62,6 +62,7 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) ->
                 description                  TEXT NOT NULL,
                 value                        REAL NOT NULL DEFAULT 0.0,
                 category                     INTEGER NOT NULL,
+                linked                       TEXT DEFAULT ('false'),
                 created_at                   TEXT NOT NULL DEFAULT ('2023-01-01 10:20:05.123'),
                 updated_at                   TEXT NOT NULL DEFAULT ('2023-01-01 10:20:05.123'),
                 year_id                      TEXT NOT NULL,
@@ -72,6 +73,19 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) ->
                 mdata_id                     TEXT PRIMARY KEY NOT NULL,
                 value                        REAL NOT NULL,
                 month                        INTEGER NOT NULL,
+                category                     INTEGER NOT NULL,
+                created_at                   TEXT DEFAULT ('2023-01-01 10:20:05.123'),
+                updated_at                   TEXT DEFAULT ('2023-01-01 10:20:05.123'),
+                exp_id                       TEXT NOT NULL,
+                year_id                      TEXT NOT NULL,
+                FOREIGN KEY (year_id)        REFERENCES years (year_id) ON UPDATE CASCADE ON DELETE SET NULL,
+                FOREIGN KEY (exp_id)         REFERENCES exp_data (exp_id) ON UPDATE CASCADE ON DELETE SET NULL
+            );
+            CREATE TABLE IF NOT EXISTS month_data_totals
+            (
+                totals_id                    TEXT PRIMARY KEY NOT NULL,
+                total_sum                    REAL NOT NULL,
+                total_mean                   REAL NOT NULL,
                 created_at                   TEXT DEFAULT ('2023-01-01 10:20:05.123'),
                 updated_at                   TEXT DEFAULT ('2023-01-01 10:20:05.123'),
                 exp_id                       TEXT NOT NULL,
