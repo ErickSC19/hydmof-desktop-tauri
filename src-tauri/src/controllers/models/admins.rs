@@ -6,7 +6,7 @@ pub struct Admin {
     pub admin_id: Option<String>,
     pub username: Option<String>,
     pub email: String,
-    pub upassword: String,
+    pub upassword: Option<String>,
     pub token: Option<String>,
     pub confirmed: Option<i8>
 }

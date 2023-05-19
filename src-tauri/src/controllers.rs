@@ -4,13 +4,17 @@ use argon2::{
 };
 pub mod helpers;
 pub mod models;
+use jwt_simple::*;
 use models::admins::Admin;
 use helpers::generate_token::new_token;
+use helpers::jwt::generate_jwt;
 use helpers::email::send_email;
-use rusqlite::{named_params, Connection, OptionalExtension};
+use rusqlite::{named_params, Connection, OptionalExtension, Error};
 use serde_json::Value;
 use std::collections::HashMap;
 use uuid::Uuid;
+
+use self::helpers::jwt::{verify_jwt, LoggedId};
 
 pub fn add_user(
     db: &Connection,
@@ -92,14 +96,47 @@ pub fn admin_login(db: &Connection, email: &str, password: &str) -> Result<Strin
     }).optional().unwrap();
     if let Some(admin) = admin {
         if admin.confirmed == Some(1) {
-            let parsed_hash = PasswordHash::new(admin.upassword.as_str()).expect("No se encontro ese usuario");
+            let upass = admin.upassword.unwrap();
+            let parsed_hash = PasswordHash::new(upass.as_str()).expect("No se encontro ese usuario");
             Argon2::default().verify_password(password.as_bytes(), &parsed_hash).unwrap();
+            let uid = LoggedId {
+                admin_id: admin.admin_id.unwrap()
+            };
+            let res = match generate_jwt(uid) {
+                Ok(r) => r,
+                Err(e) => format!("Error with jwt: {e:?}")
+            };
             Ok("Si".to_string())
         } else {
             Err("cuenta no confirmada".into())
         }
     } else {
         Err("cuenta no encontrada".into())
+    }
+}
+
+pub fn admin_profile(db: &Connection, jwt: &str) -> Result<Admin, Error> {
+    let verify: Result<jwt_simple::prelude::JWTClaims<LoggedId>, jwt_simple::Error> = verify_jwt(jwt);
+    let getid = match verify {
+        Ok(ver) => ver.custom.admin_id,
+        Err(e) => format!("err")
+    };
+    let sql = format!("SELECT * FROM admins WHERE admin_id = '{}'", getid);
+    let mut prp = db.prepare(&sql).expect("error preparing query");
+    let admin : Option<Admin> = prp.query_row([], |row| {
+        Ok(Admin {            
+            admin_id: row.get(0).unwrap(),
+            username: row.get(1).unwrap(),
+            email: row.get(2).unwrap(),
+            upassword: row.get(3).unwrap(),
+            token: row.get(4).unwrap(),
+            confirmed: row.get(5).unwrap(),
+        })
+    }).optional().unwrap();
+    if let Some(admin) = admin {
+        Ok(admin)
+    } else {
+        Err(rusqlite::Error::InvalidParameterName(rusqlite::Error::InvalidColumnName("Error al obtener el usuario".to_string()).to_string()))
     }
 }
 
