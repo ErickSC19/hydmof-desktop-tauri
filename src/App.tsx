@@ -31,7 +31,7 @@ function App() {
         <Route path="/" component={AuthLayout}>
           <Route path="/" component={Login} />
           <Route path="registro" component={Register} />
-          <Route path="confirmar" component={Confirm} />
+          <Route path="confirmar/:option" component={Confirm} />
           <Route path="recuperar-pass" component={ForgottenPassword} />
           <Route path="restablecer-pass" component={ChangePassword} />
         </Route>

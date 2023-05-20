@@ -8,7 +8,7 @@ const ForgottenPassword: Component<{}> = (props) => {
   const handleSubmit = (e: Event) => {
     e.preventDefault();
     localStorage.setItem("em", `${email()}`);
-    navigate('/Confirmar');
+    navigate('/confirmar/recuperar-contraseña');
   }
   return (
     <div class="bg-white rounded-md border text-gray-900 border-slate-300 p-10 flex flex-col w-96 z-[5]">

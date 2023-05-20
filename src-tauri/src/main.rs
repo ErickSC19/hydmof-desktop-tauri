@@ -10,6 +10,7 @@ mod state;
 
 mod controllers;
 
+use serde::Serialize;
 use state::{AppState, ServiceAccess};
 use tauri::{State, Manager, AppHandle};
 
@@ -28,21 +29,32 @@ fn confirm(app_handle: AppHandle, email: &str, code: Option<String>) -> String {
     msg
 }
 
-/* #[tauri::command]
-fn login(app_handle: AppHandle, username: &str, password: &str) -> String {
+#[tauri::command]
+fn login(app_handle: AppHandle, email: &str, password: &str) -> String {
     // Should handle errors instead of unwrapping here
-    app_handle.db(|db| database::add_item(password, username, db)).unwrap();
-    let items = app_handle.db(|db| database::get_all(db, "admins")).unwrap();
+    let items = match app_handle.db(|db| controllers::admin_login(db, email, password)) {
+        Ok(i) => i,
+        Err(e) => format!("{e:?}")
+    };
+    items
+} 
 
-    let items_string = items.join(" | ");
+#[tauri::command]
+fn resend(app_handle: AppHandle, email: &str) -> String {
+    let msg = app_handle.db(|db| controllers::admin_resend(db, email)).unwrap();
+    msg
+}
 
-    format!("Your name log: {}", items_string)
-} */
+#[tauri::command]
+fn profile(app_handle: AppHandle, jwt: &str) -> String {
+    let msg = app_handle.db(|db| controllers::admin_profile(db, jwt)).unwrap();
+    msg
+}
 
 fn main() {
     tauri::Builder::default()
         .manage(AppState { db: Default::default() })
-        .invoke_handler(tauri::generate_handler![register, confirm])
+        .invoke_handler(tauri::generate_handler![register, confirm, login, resend, profile])
         .setup(|app| {
             let handle = app.handle();
 

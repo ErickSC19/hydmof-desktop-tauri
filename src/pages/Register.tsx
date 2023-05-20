@@ -10,7 +10,7 @@ import TextInput from "../components/TextInput";
 
 const Register: Component<{}> = (props) => {
 
-  const [loginForm, { Form, Field, FieldArray }] = createForm<z.infer<typeof registerSchema>>({
+  const [registerForm, { Form, Field, FieldArray }] = createForm<z.infer<typeof registerSchema>>({
     validate: zodForm(registerSchema),
   });
 
@@ -22,7 +22,7 @@ const Register: Component<{}> = (props) => {
   const navigate = useNavigate();
 
   const handleSubmit: SubmitHandler<z.infer<typeof registerSchema>> = async (values, event) => {
-    loginForm.submitting;
+    registerForm.submitting;
     setAlert((alert) => ({ state: "failed", msg: "-", show: false }));
     const { username, email, password, repassword } = values;
     if (password === repassword) {
@@ -31,7 +31,7 @@ const Register: Component<{}> = (props) => {
         setAlert((alert) => ({ state: "success", msg: "Registro completado, revisa tu email para obtener tu codigo", show: true }));
         localStorage.setItem("em", `${email}`);
         setTimeout(() => {
-          navigate('/confirmar')
+          navigate('/confirmar/registro')
         }, 1000);
       } else {
         setAlert((alert) => ({ state: "failed", msg: `${res}`, show: true }));
