@@ -9,7 +9,7 @@ use helpers::generate_token::new_token;
 use helpers::jwt::generate_jwt;
 use models::admins::Admin;
 use rusqlite::{named_params, Connection, Error, OptionalExtension};
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::collections::HashMap;
 use uuid::Uuid;
 
@@ -65,8 +65,8 @@ pub fn confirm_admin(
             Ok(Admin {
                 admin_id: row.get(0).unwrap(),
                 username: row.get(1).unwrap(),
-                email: row.get(2).unwrap(),
-                upassword: row.get(3).unwrap(),
+                upassword: row.get(2).unwrap(),
+                email: row.get(3).unwrap(),
                 token: row.get(4).unwrap(),
                 confirmed: row.get(5).unwrap(),
             })
@@ -76,10 +76,10 @@ pub fn confirm_admin(
     if let Some(admin) = admin {
         if admin.token == tcancel {
             let mut upstmnt = conn
-                .prepare("UPDATE admins SET token = NULL, confirmed = true WHERE admin_id = '@id'")
+                .prepare("UPDATE admins SET token = NULL, confirmed = true WHERE admin_id = :id")
                 .expect("error preparing query");
-            match upstmnt.execute(named_params! { "@id": admin.admin_id }) {
-                Ok(_) => _msg = "passed".to_string(),
+            match upstmnt.execute(named_params! { ":id": admin.admin_id }) {
+                Ok(_) => _msg = admin.admin_id.unwrap(),
                 Err(e) => {
                     _msg = "Error durante la confirmación".to_string();
                     println!("Error on equery execute: {e:?}")
@@ -94,11 +94,7 @@ pub fn confirm_admin(
     Ok(_msg)
 }
 
-pub fn admin_login(
-    db: &Connection,
-    email: &str,
-    password: &str,
-) -> Result<String, Box<dyn std::error::Error>> {
+pub fn admin_login(db: &Connection, email: &str, password: &str) -> Result<String, String> {
     let mut _msg: String = String::new();
     let sql = format!("SELECT * FROM admins WHERE email = '{}'", email);
     let mut prp = db.prepare(&sql).expect("error preparing query");
@@ -107,8 +103,8 @@ pub fn admin_login(
             Ok(Admin {
                 admin_id: row.get(0).unwrap(),
                 username: row.get(1).unwrap(),
-                email: row.get(2).unwrap(),
-                upassword: row.get(3).unwrap(),
+                upassword: row.get(2).unwrap(),
+                email: row.get(3).unwrap(),
                 token: row.get(4).unwrap(),
                 confirmed: row.get(5).unwrap(),
             })
@@ -118,16 +114,24 @@ pub fn admin_login(
     if let Some(admin) = admin {
         if admin.confirmed == Some(1) {
             let upass = admin.upassword.unwrap();
-            let parsed_hash = PasswordHash::new(upass.as_str()).unwrap();
-            Argon2::default()
-                .verify_password(password.as_bytes(), &parsed_hash)
-                .unwrap();
+            println!("pass-->{}", upass);
+            let parsed_hash = match PasswordHash::new(&upass.as_str()) {
+                Ok(p) => p,
+                Err(e) => panic!("{}", e),
+            };
+            match Argon2::default().verify_password(password.as_bytes(), &parsed_hash) {
+                Ok(_) => _msg = "login succesful".to_string(),
+                Err(e) => {
+                    println!("Error on pass: {e:?}");
+                    return Err("400-Contraseña incorrecta".to_string());
+                }
+            };
             let uid = LoggedId {
                 admin_id: admin.admin_id.unwrap(),
             };
             let res = match generate_jwt(uid) {
-                Ok(r) => r,
-                Err(e) => format!("400-Error with jwt: {e:?}"),
+                Ok(r) => serde_json::to_string(&r).unwrap(),
+                Err(e) => return Err(format!("400-Error with jwt: {e:?}")),
             };
             Ok(res)
         } else {
@@ -147,19 +151,23 @@ pub fn admin_resend(db: &Connection, email: &str) -> Result<String, String> {
             Ok(Admin {
                 admin_id: row.get(0).unwrap(),
                 username: row.get(1).unwrap(),
-                email: row.get(2).unwrap(),
-                upassword: row.get(3).unwrap(),
+                upassword: row.get(2).unwrap(),
+                email: row.get(3).unwrap(),
                 token: row.get(4).unwrap(),
                 confirmed: row.get(5).unwrap(),
             })
         })
-        .optional().unwrap();
+        .optional()
+        .unwrap();
     if let Some(admin) = admin {
+        let aid = admin.admin_id.unwrap();
         let token: String = new_token();
-        let mut upstmnt = db
-            .prepare("UPDATE admins SET token = @token WHERE admin_id = '@id'")
-            .expect("error preparing query");
-        match upstmnt.execute(named_params! { "@token":token , "@id": admin.admin_id }) {
+        let nsql: String = format!(
+            "UPDATE admins SET token = @token WHERE admin_id = '{}'",
+            aid
+        );
+        let mut upstmnt = db.prepare(&nsql).expect("error preparing query");
+        match upstmnt.execute(named_params! { "@token":token }) {
             Ok(_) => _msg = "passed".to_string(),
             Err(e) => {
                 _msg = "Error durante la confirmación".to_string();
@@ -167,7 +175,12 @@ pub fn admin_resend(db: &Connection, email: &str) -> Result<String, String> {
             }
         }
         let email_body = format!("Su codigo de confirmación es este: {} \nSi esta cuenta no es tuya, solo ignora este correo", token);
-        match send_email(&email_body, &email, &admin.username.unwrap(), "Confirmar cuenta") {
+        match send_email(
+            &email_body,
+            &email,
+            &admin.username.unwrap(),
+            "Confirmar cuenta",
+        ) {
             Ok(_) => _msg = "passed".to_string(),
             Err(e) => {
                 _msg = "Error al enviar correo de confirmacion".to_string();
@@ -180,12 +193,15 @@ pub fn admin_resend(db: &Connection, email: &str) -> Result<String, String> {
     Ok(_msg)
 }
 
-pub fn admin_profile(db: &Connection, jwt: &str) -> Result<String, Error> {
+pub fn admin_profile(db: &Connection, jwt: &str) -> Result<serde_json::Value, String> {
     let verify: Result<jwt_simple::prelude::JWTClaims<LoggedId>, jwt_simple::Error> =
         verify_jwt(jwt);
     let getid = match verify {
         Ok(ver) => ver.custom.admin_id,
-        Err(e) => format!("Error sending email: {e:?}"),
+        Err(e) => {
+            println!("Error sending email: {e:?}");
+            return Err(format!("400-Error with jwt: {e:?}"));
+        }
     };
     let sql = format!("SELECT * FROM admins WHERE admin_id = '{}'", getid);
     let mut prp = db.prepare(&sql).expect("error preparing query");
@@ -194,8 +210,8 @@ pub fn admin_profile(db: &Connection, jwt: &str) -> Result<String, Error> {
             Ok(Admin {
                 admin_id: row.get(0).unwrap(),
                 username: row.get(1).unwrap(),
-                email: row.get(2).unwrap(),
-                upassword: row.get(3).unwrap(),
+                upassword: row.get(2).unwrap(),
+                email: row.get(3).unwrap(),
                 token: row.get(4).unwrap(),
                 confirmed: row.get(5).unwrap(),
             })
@@ -203,14 +219,43 @@ pub fn admin_profile(db: &Connection, jwt: &str) -> Result<String, Error> {
         .optional()
         .unwrap();
     if let Some(admin) = admin {
-        let serialized = serde_json::to_string(&admin).unwrap();
-        Ok(serialized)
+        let res = json!({
+            "admin_id": admin.admin_id,
+            "username": admin.username,
+            "email": admin.email
+        });
+        //let serialized = serde_json::to_string(&res).unwrap();
+        Ok(res)
     } else {
-        Err(rusqlite::Error::InvalidParameterName(
-            rusqlite::Error::InvalidColumnName("Error al obtener el usuario".to_string())
-                .to_string(),
-        ))
+        Err("404-Error al obtener el usuario".to_string())
     }
+}
+
+pub fn admin_change_pass(conn: &Connection, uid: &str, password: &str) -> Result<String, String> {
+    let mut _msg: String = String::new();
+    let sql = format!("SELECT * FROM admins WHERE admin_id = '{}'", uid);
+    let mut prp = conn.prepare(&sql).expect("error preparing query");
+    if prp.exists([]).unwrap() == false {
+        let salt = SaltString::generate(&mut OsRng);
+        let argon2 = Argon2::default();
+        let password_hash = argon2
+            .hash_password(password.as_bytes(), &salt)
+            .expect("error")
+            .to_string();
+        let mut upstmnt = conn
+            .prepare("UPDATE admins SET token = NULL, upassword = :pass WHERE admin_id = :id")
+            .expect("error preparing query");
+        match upstmnt.execute(named_params! {":pass": password_hash, ":id": uid }) {
+            Ok(_) => _msg = "Contraseña cambiada con exito.".to_string(),
+            Err(e) => {
+                println!("Error updating to new password: {e:?}");
+                return Err(format!("400-Error al intentar asignar nueva contraseña: {e:?}"));
+            }
+        }
+    } else {
+        return Err("400-No se encontró el usuario".to_string());
+    }
+    Ok(_msg)
 }
 
 pub fn add_item(db: &Connection, table: &str, values: &str) -> Result<(), rusqlite::Error> {

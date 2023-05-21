@@ -12,6 +12,7 @@ type Admin = {
 type LoginForm = {
   email: string;
   password: string;
+  remember?: boolean;
 };
 const loginSchema = z.object({
   email: z
@@ -20,7 +21,9 @@ const loginSchema = z.object({
     .email('Escribe un correo valido.'),
   password: z
     .string()
-    .min(1, 'Escribe tu contraseña.')
+    .min(1, 'Escribe tu contraseña.'),
+  remember: z
+    .boolean()
 });
 
 type RegisterForm = {
@@ -49,7 +52,7 @@ const registerSchema = z.object({
     path: ["repassword"], 
   });
 
-  type changePassword = {
+  type ChangePassword = {
     password: string;
     repassword: string;
   };
@@ -66,6 +69,6 @@ const registerSchema = z.object({
       path: ["repassword"], 
     });
 
-export type { LoginForm, RegisterForm, Admin };
+export type { LoginForm, RegisterForm, Admin, ChangePassword };
 
 export { loginSchema, registerSchema, changePasswordSchema };

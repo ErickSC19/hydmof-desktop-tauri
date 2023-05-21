@@ -5,8 +5,8 @@ use rusqlite::{Row};
 pub struct Admin {
     pub admin_id: Option<String>,
     pub username: Option<String>,
-    pub email: String,
     pub upassword: Option<String>,
+    pub email: String,
     pub token: Option<String>,
     pub confirmed: Option<i8>
 }
@@ -16,8 +16,8 @@ impl<'a> From<Row<'a>> for Admin {
         Self {
             admin_id: row.get(0).unwrap(),
             username: row.get(1).unwrap(),
-            email: row.get(2).unwrap(),
-            upassword: row.get(3).unwrap(),
+            upassword: row.get(2).unwrap(),
+            email: row.get(3).unwrap(),
             token: row.get(4).unwrap(),
             confirmed: row.get(5).unwrap(),
         }

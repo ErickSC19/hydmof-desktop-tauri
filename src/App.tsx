@@ -12,19 +12,18 @@ import Register from "./pages/Register";
 import Confirm from "./pages/Confirm";
 import ForgottenPassword from "./pages/ForgottenPassword";
 import ChangePassword from "./pages/ChangePassword";
-
+import { appWindow } from "@tauri-apps/api/window";
+import { exit } from '@tauri-apps/api/process';
 
 function App() {
   attachDebugger();
   // attachDevtoolsOverlay()
-  const [greetMsg, setGreetMsg] = createSignal("");
-  const [name, setName] = createSignal("");
-
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    setGreetMsg(await invoke("greet", { name: name() }));
-  }
-
+  appWindow.onCloseRequested(async (event) => {
+    const t: string | null = localStorage.getItem('open'); 
+    if (!t) {
+      localStorage.removeItem('hydmot_token');
+    }
+  });
   return (
     <Router>
       <Routes>

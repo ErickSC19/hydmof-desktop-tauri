@@ -3,9 +3,13 @@ import { A, useNavigate, useParams } from "@solidjs/router";
 import { invoke } from "@tauri-apps/api";
 import AlertInline, { Alert } from "../components/AlertInline";
 import { createStore } from "solid-js/store";
+import { useAuthStore } from "../store/authStore";
 
 const Confirm: Component<{}> = (props) => {
   const params = useParams();
+  const { setIdToChase } = useAuthStore((state) => ({
+    setIdToChase: state.setIdToChase
+  }));
   const [token, setToken] = createSignal<string>("");
   const [email, setEmail] = createSignal<string | null>("");
   const [alert, setAlert] = createStore<Alert>({ state: "failed", msg: "hola", show: false });
@@ -13,25 +17,33 @@ const Confirm: Component<{}> = (props) => {
 
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
-    const res = await invoke('confirm', {email: email(), code: token()});
-    if (res === "pass") {
+    const res: string = await invoke('confirm', {email: email(), code: token()});
+    const status = res.split('-');
+    if (status[0] !== "\"400") {
       localStorage.removeItem("em");
+      const format = res.split('"')
+      setIdToChase(format[1]);
+      setTimeout(() => {
+        navigate('/');
+      }, 1000);
       setAlert( (alert) => ({ state: "success", msg: `Codigo confirmado, redirigiendo al login`, show: true }));
-      navigate('/');
     } else {
-      setAlert( (alert) => ({ state: "failed", msg: `${res}`, show: true }));
+      setAlert( (alert) => ({ state: "failed", msg: `${status[1]}`, show: true }));
     }
   }
 
   const resendCode = async () => {
-    invoke('resend', {email: email()});
+    await invoke('resend', {email: email()});
     setAlert( (alert) => ({ state: "stale", msg: `Codigo reenviado a ${email()}`, show: true }));
   }
 
-  onMount(() => {
+  onMount(async () => {
     const e: string | null = localStorage.getItem("em");
-    const res = invoke('confirm', {email: email(), code: token()});
     setEmail(e);
+    if (params.option === 'registro') {  
+      const res = invoke('resend', {email: email()});
+      console.log(res);  
+    }
   })
   return (
     <div class="bg-white rounded-md border text-gray-900 border-slate-300 p-10 flex flex-col min-w-fit w-96 z-[5]">

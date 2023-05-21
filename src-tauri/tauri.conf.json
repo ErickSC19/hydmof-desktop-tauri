@@ -21,6 +21,12 @@
       "shell": {
         "all": false,
         "open": true
+      },
+      "window": {
+        "maximize": true,
+        "unmaximize": true,
+        "setSize": true,
+        "close": true
       }
     },
     "bundle": {
