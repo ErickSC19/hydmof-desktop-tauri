@@ -27,6 +27,7 @@ const AuthLayout: Component<{}> = (props) => {
         await appWindow.toggleMaximize();
         navigate('/finanzas')
       } catch (error) {
+        await appWindow.toggleMaximize();
         console.log('---> ', error);
       }
     }

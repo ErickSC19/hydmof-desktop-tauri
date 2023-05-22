@@ -72,6 +72,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         });
       })
       .catch((e) => {
+        localStorage.removeItem('hydmot_token');
         throw new Error(`store --->  ${e}`);
       });
   },

@@ -11,7 +11,7 @@ pub fn generate_jwt(id: LoggedId) ->  Result<String, Error>{
     dotenv().ok(); 
     let s= std::env::var("SECRET").unwrap();
     let key = HS256Key::from_bytes(s.to_owned().as_bytes());
-    let claims: JWTClaims<LoggedId> = Claims::with_custom_claims(id, Duration::from_hours(10));
+    let claims: JWTClaims<LoggedId> = Claims::with_custom_claims(id, Duration::from_days(7));
     let token: Result<String, jwt_simple::Error> = key.authenticate(claims);
     token
 }

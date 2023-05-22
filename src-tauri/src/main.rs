@@ -10,7 +10,6 @@ mod state;
 
 mod controllers;
 
-use serde::Serialize;
 use state::{AppState, ServiceAccess};
 use tauri::{AppHandle, Manager, State};
 

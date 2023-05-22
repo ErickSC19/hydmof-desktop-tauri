@@ -46,8 +46,8 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) ->
         CREATE TABLE IF NOT EXISTS years
             (
                 year_id                      TEXT     PRIMARY KEY NOT NULL,
-                fromDate                     TEXT NOT NULL DEFAULT ('2023-01-01 10:20:05.123'),
-                toDate                       TEXT NOT NULL DEFAULT ('2023-01-01 10:20:05.123'),
+                from_date                     TEXT NOT NULL DEFAULT ('2023-01-01 10:20:05.123'),
+                to_date                       TEXT NOT NULL DEFAULT ('2023-01-01 10:20:05.123'),
                 complete                     INTEGER  NOT NULL DEFAULT 0 CHECK (complete == 0 OR complete == 1),
                 months                       INTEGER  NOT NULL DEFAULT 0,
                 employees                    INTEGER  NOT NULL DEFAULT 0,

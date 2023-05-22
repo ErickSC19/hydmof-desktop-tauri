@@ -14,6 +14,10 @@ import ForgottenPassword from "./pages/ForgottenPassword";
 import ChangePassword from "./pages/ChangePassword";
 import { appWindow } from "@tauri-apps/api/window";
 import { exit } from '@tauri-apps/api/process';
+import Expenses from "./pages/Expenses";
+import Results from "./pages/Results";
+import Accounts from "./pages/Accounts";
+import Profile from "./pages/Profile";
 
 function App() {
   attachDebugger();
@@ -36,6 +40,10 @@ function App() {
         </Route>
         <Route path="/finanzas" component={FinLayout}>
           <Route path="/" component={Finances} />
+          <Route path="costos" component={Expenses} />
+          <Route path="resultados" component={Results} />
+          <Route path="cuentas" component={Accounts} />
+          <Route path="perfil" component={Profile} />
         </Route>
       </Routes>
     </Router>

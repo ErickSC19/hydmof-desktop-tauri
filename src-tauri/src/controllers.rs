@@ -199,8 +199,8 @@ pub fn admin_profile(db: &Connection, jwt: &str) -> Result<serde_json::Value, St
     let getid = match verify {
         Ok(ver) => ver.custom.admin_id,
         Err(e) => {
-            println!("Error sending email: {e:?}");
-            return Err(format!("400-Error with jwt: {e:?}"));
+            println!("Error with jwt: {e:?}");
+            return Err(format!("400-Error con el JWT: {e:?}"));
         }
     };
     let sql = format!("SELECT * FROM admins WHERE admin_id = '{}'", getid);
