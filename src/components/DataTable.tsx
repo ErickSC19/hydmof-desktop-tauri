@@ -25,9 +25,16 @@ const defaultData: Year[] = [
     complete: true,
     months: 12,
   },
+  {
+    year_id: "2",
+    from_date: "2019",
+    to_date: "2020",
+    employees: 12,
+    complete: true,
+    months: 12,
+  },
 ];
 
-const columnHelper = createColumnHelper<Year>();
 const defaultColumns: ColumnDef<Year>[] = [
   {
     id: "year_id",
@@ -53,55 +60,58 @@ const defaultColumns: ColumnDef<Year>[] = [
       </div>
     ),
   },
+  {
+    accessorKey: 'from_date',
+    header: () => <span>Inicio</span>
+  },
+  {
+    accessorKey: 'to_date',
+    header: () => <span>Termino</span>
+  },
+  {
+    accessorKey: 'employees',
+    header: () => <span>Empleados</span>
+  },
+  {
+    accessorKey: 'complete',
+    cell: (info) => (info.getValue() ? <span>Completado</span> : <span class="">En Progreso</span>),
+    header: () => <span>Estado</span>
+  }
 ];
-/* [
-  columnHelper.accessor("year_id", {
-    cell: (info) => <span class="hidden">{info.getValue()}</span>,
-    header: (info) => <span class="hidden">{'year_id'}</span>,
-  }),
-  columnHelper.accessor("from_date", {
-    cell: (info) => info.getValue(),
-    header: () => <span>Incio</span>,
-  }),
-  columnHelper.accessor("to_date", {
-    cell: (info) => info.getValue(),
-    header: () => <span>Termino</span>,
-  }),
-  columnHelper.accessor("employees", {
-    cell: (info) => info.getValue(),
-    header: () => <span>Empleados</span>,
-  }),
-  columnHelper.accessor("complete", {
-    cell: (info) => (info.getValue() ? "Completado" : "En Progreso"),
-    header: () => <span>Progreso</span>,
-  }),
-] */ const DataTable: Component<{}> = (props) => {
+  const DataTable: Component<{}> = (props) => {
   const [data, setData] = createSignal(defaultData);
+  const [rowSelection, setRowSelection] = createSignal({});
   const rerender = () => setData(defaultData);
 
   const table = createSolidTable({
     get data() {
       return data();
     },
+    //state: {
+    //  rowSelection: rowSelection(),
+    //},
     columns: defaultColumns,
+    //enableRowSelection: true,
+    //enableMultiRowSelection: true,
+    //onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
   });
   return (
     <div class="p-2">
-      <table class="border text-center h-full">
+      <table class="border rounded text-center h-full w-full">
         <thead class="bg-slate-300">
           <For each={table.getHeaderGroups()}>
             {(headerGroup) => (
-              <tr>
+              <tr class="shadow-inner">
                 <For each={headerGroup.headers}>
                   {(header) => (
-                    <th>
+                    <th class="px-3">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </th>
                   )}
                 </For>
@@ -112,7 +122,7 @@ const defaultColumns: ColumnDef<Year>[] = [
         <tbody>
           <For each={table.getRowModel().rows}>
             {(row) => (
-              <tr>
+              <tr class="hover:bg-slate-100">
                 <For each={row.getVisibleCells()}>
                   {(cell) => (
                     <td>
@@ -137,9 +147,9 @@ const defaultColumns: ColumnDef<Year>[] = [
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.footer,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.footer,
+                          header.getContext()
+                        )}
                     </th>
                   )}
                 </For>
@@ -162,7 +172,7 @@ interface IndeterminateCheckboxProps extends JSX.InputHTMLAttributes<HTMLInputEl
 
 
 function IndeterminateCheckbox(props: IndeterminateCheckboxProps) {
-  const merged = mergeProps({indeterminate: false}, props);
+  const merged = mergeProps({ indeterminate: false }, props);
   const [ref, setRef] = createSignal<HTMLInputElement | null>(null);
 
   function handleRef(element: HTMLInputElement) {
@@ -176,13 +186,13 @@ function IndeterminateCheckbox(props: IndeterminateCheckboxProps) {
     }
   }
 
-  updateIndeterminate(); 
+  updateIndeterminate();
 
   return (
     <input
       type="checkbox"
       ref={handleRef}
-      class={`cursor-pointer ${props.class}`}
+      class={`cursor-pointer rounded indeterminate:bg-slate-500 indeterminate:focus:bg-slate-400 indeterminate:hover:bg-slate-400 checked:bg-slate-500 checked:focus:bg-slate-500 checked:hover:bg-slate-400 focus:ring-slate-500 ${props.class}`}
       {...props}
     />
   );
