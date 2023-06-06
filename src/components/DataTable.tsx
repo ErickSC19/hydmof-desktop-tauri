@@ -1,4 +1,6 @@
 import { Component, For, createEffect, createSignal, JSX, mergeProps } from "solid-js";
+import { pencilSquare, trash } from 'solid-heroicons/outline';
+import { Icon } from 'solid-heroicons';
 import {
   ColumnDef,
   createColumnHelper,
@@ -78,7 +80,7 @@ const defaultColumns: ColumnDef<Year>[] = [
     header: () => <span>Estado</span>
   }
 ];
-  const DataTable: Component<{}> = (props) => {
+const DataTable: Component<{}> = (props) => {
   const [data, setData] = createSignal(defaultData);
   const [rowSelection, setRowSelection] = createSignal({});
   const rerender = () => setData(defaultData);
@@ -98,6 +100,7 @@ const defaultColumns: ColumnDef<Year>[] = [
   });
   return (
     <div class="p-2">
+      <button class='bg-white border border-slate-200 items-center justify-center flex h-full w-auto p-1 rounded hover:bg-slate-100 group-hover:shadow-inner group-hover:shadow-slate-300/50 active:bg-blue-500 active:text-white'><Icon path={trash} class="h-5" /> Borrar selección </button>
       <table class="border rounded text-center h-full w-full">
         <thead class="bg-slate-300">
           <For each={table.getHeaderGroups()}>
