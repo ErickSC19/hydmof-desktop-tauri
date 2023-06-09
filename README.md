@@ -1,7 +1,3 @@
-# Tauri + Solid + Typescript
+# hydmof: Finance management desktop app
 
-This template should help get you started developing with Tauri, Solid and Typescript in Vite.
-
-## Recommended IDE Setup
-
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+This app aims to be a recreation of the webapp done in a previous internship, but now to work in desktop and offline.
