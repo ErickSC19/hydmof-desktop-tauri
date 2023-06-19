@@ -15,7 +15,7 @@ const AuthLayout: Component<{}> = (props) => {
   }));
   const location = useLocation();
   const pathname = createMemo(() => location.pathname);
-  console.log(pathname);
+  // console.log(pathname);
   const navigate = useNavigate();
   
   onMount(async () => {
