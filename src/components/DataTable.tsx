@@ -15,6 +15,7 @@ import {
 import { Year } from "../types/YearsTypes";
 import { useYearStore } from "../store/yearStore";
 import { shallow } from "zustand/shallow";
+import { useModalStore } from "../store/modalStore";
 
 const defaultData: Year[] = [
   {
@@ -116,6 +117,9 @@ const DataTable: Component<{}> = (props) => {
   const [data, setData] = createSignal(defaultData);
   const [rowSelection, setRowSelection] = createSignal({});
   const rerender = () => setData(defaultData);
+  const { toggleYearModal } = useModalStore((state) => ({
+    toggleYearModal: state.toggleYearModal
+  }));
   const { all, selected } = useYearStore(
     (state) => ({
       all: state.all,
@@ -160,10 +164,10 @@ const DataTable: Component<{}> = (props) => {
             class="py-1 pl-9 rounded block w-full h-fit border-slate-300 placeholder-slate-400"
           />
         </label>
-        <button class="bg-white border border-slate-200 items-center justify-center flex h-full w-auto p-1 rounded hover:bg-slate-100 group-hover:shadow-inner group-hover:shadow-slate-300/50 active:bg-green-500 active:text-white">
+        <button type="button" onClick={() => toggleYearModal(true)} class="bg-white border border-slate-200 items-center justify-center flex h-full w-auto p-1 rounded hover:bg-slate-100 group-hover:shadow-inner group-hover:shadow-slate-300/50 active:bg-green-500 active:text-white">
           <Icon path={plusCircle} class="h-6" />
         </button>
-        <button class="bg-white border border-slate-200 items-center justify-center flex h-full w-auto p-1 rounded hover:bg-slate-100 group-hover:shadow-inner group-hover:shadow-slate-300/50 active:bg-red-500 active:text-white">
+        <button type="button" class="bg-white border border-slate-200 items-center justify-center flex h-full w-auto p-1 rounded hover:bg-slate-100 group-hover:shadow-inner group-hover:shadow-slate-300/50 active:bg-red-500 active:text-white">
           <Icon path={trash} class="h-5 mr-1" /> Borrar selección{" "}
         </button>
       </div>
