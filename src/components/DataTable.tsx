@@ -8,14 +8,17 @@ import {
 import { Icon } from "solid-heroicons";
 import {
   ColumnDef,
+  SortingState,
   createSolidTable,
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
 } from "@tanstack/solid-table";
 import { Year } from "../types/YearsTypes";
 import { useYearStore } from "../store/yearStore";
 import { shallow } from "zustand/shallow";
-import { useModalStore } from "../store/modalStore";
+const [sorting, setSorting] = createSignal<SortingState>([])
+
 
 const defaultColumns: ColumnDef<Year>[] = [
   {
@@ -128,6 +131,13 @@ const DataTable: Component<{}> = (props) => {
     //enableRowSelection: true,
     //enableMultiRowSelection: true,
     //onRowSelectionChange: setRowSelection,
+    // state: {
+    //   get sorting() {
+    //     return sorting()
+    //   },
+    // },
+    // onSortingChange: setSorting,
+    // getSortedRowModel: getSortedRowModel(),
     getCoreRowModel: getCoreRowModel(),
   });
 
