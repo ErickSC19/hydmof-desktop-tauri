@@ -1,4 +1,12 @@
-import { Component, For, createSignal, JSX, mergeProps, onCleanup } from "solid-js";
+import {
+  Component,
+  For,
+  createSignal,
+  JSX,
+  mergeProps,
+  onCleanup,
+  Show,
+} from "solid-js";
 import {
   pencilSquare,
   trash,
@@ -14,11 +22,10 @@ import {
   getCoreRowModel,
   getSortedRowModel,
 } from "@tanstack/solid-table";
-import { Year } from "../types/YearsTypes";
-import { useYearStore } from "../store/yearStore";
+import { IndeterminateCheckbox, DeleteCurrentButton, EditCurrentButton } from "./CustomCells";
+import { Year } from "../../types/YearsTypes";
+import { useYearStore } from "../../store/yearStore";
 import { shallow } from "zustand/shallow";
-const [sorting, setSorting] = createSignal<SortingState>([])
-
 
 const defaultColumns: ColumnDef<Year>[] = [
   {
@@ -46,6 +53,7 @@ const defaultColumns: ColumnDef<Year>[] = [
         />
       </div>
     ),
+    enableSorting: false
   },
   {
     accessorKey: "from_date",
@@ -82,6 +90,7 @@ const defaultColumns: ColumnDef<Year>[] = [
         />
       </div>
     ),
+    enableSorting: false
   },
   {
     accessorFn: (row) => row.year_id,
@@ -96,6 +105,7 @@ const defaultColumns: ColumnDef<Year>[] = [
         />
       </div>
     ),
+    enableSorting: false
   },
 ];
 const DataTable: Component<{}> = (props) => {
@@ -107,6 +117,7 @@ const DataTable: Component<{}> = (props) => {
     shallow
   );
   const [data, setData] = createSignal(all);
+  const [sorting, setSorting] = createSignal<SortingState>([]);
   const [rowSelection, setRowSelection] = createSignal({});
   const rerender = () => setData(all);
   const { setSelected } = useYearStore((state) => ({
@@ -116,9 +127,9 @@ const DataTable: Component<{}> = (props) => {
   const unsub = useYearStore.subscribe(
     (state) => state.all,
     (all) => {
-      setData(all)
+      setData(all);
     }
-  )
+  );
 
   const table = createSolidTable({
     get data() {
@@ -131,13 +142,13 @@ const DataTable: Component<{}> = (props) => {
     //enableRowSelection: true,
     //enableMultiRowSelection: true,
     //onRowSelectionChange: setRowSelection,
-    // state: {
-    //   get sorting() {
-    //     return sorting()
-    //   },
-    // },
-    // onSortingChange: setSorting,
-    // getSortedRowModel: getSortedRowModel(),
+    state: {
+      get sorting() {
+        return sorting()
+      },
+    },
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
     getCoreRowModel: getCoreRowModel(),
   });
 
@@ -145,8 +156,8 @@ const DataTable: Component<{}> = (props) => {
   //   const selection = rowSelection().
   //   setSelected(selection);
   // })
-  
-  onCleanup(() => unsub())
+
+  onCleanup(() => unsub());
 
   return (
     <div class="p-2">
@@ -157,13 +168,26 @@ const DataTable: Component<{}> = (props) => {
               <tr class="shadow-inner">
                 <For each={headerGroup.headers}>
                   {(header) => (
-                    <th class="px-3">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
+                    <th class="px-3" colSpan={header.colSpan}>
+                      <Show when={!header.isPlaceholder}>
+                        <div
+                          class={
+                            header.column.getCanSort()
+                              ? "cursor-pointer select-none"
+                              : undefined
+                          }
+                          onClick={header.column.getToggleSortingHandler()}
+                        >
+                          {flexRender(
                             header.column.columnDef.header,
                             header.getContext()
                           )}
+                          {{
+                            asc: " 🔼",
+                            desc: " 🔽",
+                          }[header.column.getIsSorted() as string] ?? null}
+                        </div>
+                      </Show>
                     </th>
                   )}
                 </For>
@@ -172,7 +196,7 @@ const DataTable: Component<{}> = (props) => {
           </For>
         </thead>
         <tbody>
-          <For each={table.getRowModel().rows}>
+          <For each={table.getRowModel().rows.slice(0, 10)}>
             {(row) => (
               <tr class="hover:bg-slate-100">
                 <For each={row.getVisibleCells()}>
@@ -189,111 +213,15 @@ const DataTable: Component<{}> = (props) => {
             )}
           </For>
         </tbody>
-        <tfoot>
-          <For each={table.getFooterGroups()}>
-            {(footerGroup) => (
-              <tr>
-                <For each={footerGroup.headers}>
-                  {(header) => (
-                    <th>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.footer,
-                            header.getContext()
-                          )}
-                    </th>
-                  )}
-                </For>
-              </tr>
-            )}
-          </For>
-        </tfoot>
       </table>
-      <div class="h-4" />
-      <button onClick={() => rerender()} class="border p-2">
-        Rerender
-      </button>
+      <div>{table.getRowModel().rows.length} Registros</div>
+      <div class="h-4">
+        <button class="border p-2" onClick={() => rerender()}>Refresh Data</button>
+      </div>
+      {/* <pre>{JSON.stringify(sorting(), null, 2)}</pre> */}
     </div>
   );
 };
 
-interface IndeterminateCheckboxProps
-  extends JSX.InputHTMLAttributes<HTMLInputElement> {
-  indeterminate?: boolean;
-}
-
-function IndeterminateCheckbox(props: IndeterminateCheckboxProps) {
-  const merged = mergeProps({ indeterminate: false }, props);
-  const [ref, setRef] = createSignal<HTMLInputElement | null>(null);
-
-  function handleRef(element: HTMLInputElement) {
-    setRef(() => element);
-  }
-
-  function updateIndeterminate() {
-    const inputElement = ref();
-    if (inputElement && typeof props.indeterminate === "boolean") {
-      inputElement.indeterminate = !props.checked && props.indeterminate;
-    }
-  }
-
-  updateIndeterminate();
-
-  return (
-    <input
-      type="checkbox"
-      ref={handleRef}
-      class={`cursor-pointer rounded indeterminate:bg-slate-500 indeterminate:focus:bg-slate-400 indeterminate:hover:bg-slate-400 checked:bg-slate-500 checked:focus:bg-slate-500 checked:hover:bg-slate-400 focus:ring-slate-500 ${props.class}`}
-      {...props}
-    />
-  );
-}
-
-interface RowButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
-  oid?: string;
-}
-
-function DeleteCurrentButton(props: RowButtonProps) {
-  const merged = mergeProps({ oid: "" }, props);
-  const { setToEdit } = useYearStore((state) => ({
-    setToEdit: state.setToEdit,
-  }));
-  function deleteYear() {
-    console.log("edit->", merged.oid);
-    setToEdit(merged.oid);
-  }
-  return (
-    <button
-      type="button"
-      class="bg-white border border-slate-200 items-center justify-center flex h-full w-auto p-1 rounded hover:bg-slate-100 group-hover:shadow-inner group-hover:shadow-slate-300/50 active:bg-red-500 active:text-white"
-      onClick={() => deleteYear()}
-      {...props}
-    >
-      <Icon path={trash} class="h-5" />
-    </button>
-  );
-}
-
-function EditCurrentButton(props: RowButtonProps) {
-  const merged = mergeProps({ oid: "" }, props);
-  const { setToEdit } = useYearStore((state) => ({
-    setToEdit: state.setToEdit,
-  }));
-  function deleteYear() {
-    console.log("edit->", merged.oid);
-    setToEdit(merged.oid);
-  }
-  return (
-    <button
-      type="button"
-      class="bg-white border border-slate-200 items-center justify-center flex h-full w-auto p-1 rounded hover:bg-slate-100 group-hover:shadow-inner group-hover:shadow-slate-300/50 active:bg-blue-500 active:text-white"
-      onClick={() => deleteYear()}
-      {...props}
-    >
-      <Icon path={pencilSquare} class="h-5" />
-    </button>
-  );
-}
 
 export default DataTable;

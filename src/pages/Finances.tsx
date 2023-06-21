@@ -1,5 +1,5 @@
 import { Component, createSignal, onCleanup } from 'solid-js';
-import DataTable from '../components/DataTable';
+import DataTable from '../components/table/DataTable';
 import YearModal from '../components/YearModal';
 import { trash, plusCircle, magnifyingGlass } from 'solid-heroicons/outline';
 import { Icon } from 'solid-heroicons';
