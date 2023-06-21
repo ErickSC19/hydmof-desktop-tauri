@@ -1,5 +1,6 @@
 import create from "solid-zustand";
 import { Year } from "../types/YearsTypes";
+import { subscribeWithSelector } from "zustand/middleware";
 
 interface YearStore {
   all: Year[];
@@ -31,7 +32,7 @@ const defaultData: Year[] = [
   },
 ];
 
-export const useYearStore = create<YearStore>((set, get) => ({
+export const useYearStore = create(subscribeWithSelector<YearStore>((set, get) => ({
   all: defaultData,
   selected: [],
   toEdit: null,
@@ -56,4 +57,4 @@ export const useYearStore = create<YearStore>((set, get) => ({
       selected: [],
     });
   },
-}));
+})));

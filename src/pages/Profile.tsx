@@ -28,7 +28,8 @@ const Profile: Component<{}> = (props) => {
             <input type="color" />
         </div>
         <div class=''>
-            <EditableText />
+          <h2 class='text-xl font-bold'>Nombre de usuario</h2>
+            <EditableText class='text-lg' val={editedUsername()} />
         </div>
       </div>
     </div>

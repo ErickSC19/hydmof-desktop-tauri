@@ -23,9 +23,9 @@ const EditableText: Component<{ class?: string; val?: string }> = (props) => {
       />
       <button type="button" class="ml-auto" onClick={() => handleEdit()}>
         {willEdit() ? (
-          <Icon path={check} style="width: 32px;" />
+          <Icon path={check} style="width: 24px;" />
         ) : (
-          <Icon path={pencilSquare} style="width: 32px;" />
+          <Icon path={pencilSquare} style="width: 24px;" />
         )}
       </button>
     </div>

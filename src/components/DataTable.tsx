@@ -1,4 +1,4 @@
-import { Component, For, createSignal, JSX, mergeProps } from "solid-js";
+import { Component, For, createSignal, JSX, mergeProps, onCleanup } from "solid-js";
 import {
   pencilSquare,
   trash,
@@ -17,25 +17,6 @@ import { useYearStore } from "../store/yearStore";
 import { shallow } from "zustand/shallow";
 import { useModalStore } from "../store/modalStore";
 
-const defaultData: Year[] = [
-  {
-    year_id: "1",
-    from_date: "2018-01-01",
-    to_date: "2019-01-01",
-    employees: 7,
-    complete: true,
-    months: 12,
-  },
-  {
-    year_id: "2",
-    from_date: "2019-01-01",
-    to_date: "2020-01-01",
-    employees: 12,
-    complete: true,
-    months: 12,
-  },
-];
-
 const defaultColumns: ColumnDef<Year>[] = [
   {
     accessorFn: (row) => row.year_id,
@@ -53,6 +34,7 @@ const defaultColumns: ColumnDef<Year>[] = [
       <div class="px-1">
         <IndeterminateCheckbox
           {...{
+            id: row.getValue("year_id"),
             checked: row.getIsSelected(),
             disabled: !row.getCanSelect(),
             indeterminate: row.getIsSomeSelected(),
@@ -114,12 +96,6 @@ const defaultColumns: ColumnDef<Year>[] = [
   },
 ];
 const DataTable: Component<{}> = (props) => {
-  const [data, setData] = createSignal(defaultData);
-  const [rowSelection, setRowSelection] = createSignal({});
-  const rerender = () => setData(defaultData);
-  const { toggleYearModal } = useModalStore((state) => ({
-    toggleYearModal: state.toggleYearModal
-  }));
   const { all, selected } = useYearStore(
     (state) => ({
       all: state.all,
@@ -127,9 +103,19 @@ const DataTable: Component<{}> = (props) => {
     }),
     shallow
   );
+  const [data, setData] = createSignal(all);
+  const [rowSelection, setRowSelection] = createSignal({});
+  const rerender = () => setData(all);
   const { setSelected } = useYearStore((state) => ({
     setSelected: state.setSelected,
   }));
+
+  const unsub = useYearStore.subscribe(
+    (state) => state.all,
+    (all) => {
+      setData(all)
+    }
+  )
 
   const table = createSolidTable({
     get data() {
@@ -149,28 +135,11 @@ const DataTable: Component<{}> = (props) => {
   //   const selection = rowSelection().
   //   setSelected(selection);
   // })
+  
+  onCleanup(() => unsub())
+
   return (
     <div class="p-2">
-      <div class="flex gap-1 mb-2">
-        <label class="relative block grow">
-          <span class="sr-only">Search</span>
-          <span class="absolute inset-y-0 left-0 flex items-center pl-2">
-            <Icon path={magnifyingGlass} class="h-5 w-5" />
-          </span>
-          <input
-            type="text"
-            name="search"
-            placeholder="Busca un registro..."
-            class="py-1 pl-9 rounded block w-full h-fit border-slate-300 placeholder-slate-400"
-          />
-        </label>
-        <button type="button" onClick={() => toggleYearModal(true)} class="bg-white border border-slate-200 items-center justify-center flex h-full w-auto p-1 rounded hover:bg-slate-100 group-hover:shadow-inner group-hover:shadow-slate-300/50 active:bg-green-500 active:text-white">
-          <Icon path={plusCircle} class="h-6" />
-        </button>
-        <button type="button" class="bg-white border border-slate-200 items-center justify-center flex h-full w-auto p-1 rounded hover:bg-slate-100 group-hover:shadow-inner group-hover:shadow-slate-300/50 active:bg-red-500 active:text-white">
-          <Icon path={trash} class="h-5 mr-1" /> Borrar selección{" "}
-        </button>
-      </div>
       <table class="border rounded text-center h-full w-full">
         <thead class="bg-slate-300">
           <For each={table.getHeaderGroups()}>
