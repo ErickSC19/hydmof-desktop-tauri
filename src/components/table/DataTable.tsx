@@ -12,6 +12,8 @@ import {
   trash,
   plusCircle,
   magnifyingGlass,
+  chevronDown,
+  chevronUp
 } from "solid-heroicons/outline";
 import { Icon } from "solid-heroicons";
 import {
@@ -173,7 +175,7 @@ const DataTable: Component<{}> = (props) => {
                         <div
                           class={
                             header.column.getCanSort()
-                              ? "cursor-pointer select-none"
+                              ? "cursor-pointer select-none flex items-center justify-center"
                               : undefined
                           }
                           onClick={header.column.getToggleSortingHandler()}
@@ -183,8 +185,8 @@ const DataTable: Component<{}> = (props) => {
                             header.getContext()
                           )}
                           {{
-                            asc: " 🔼",
-                            desc: " 🔽",
+                            asc: <Icon path={chevronUp} class="h-4 w-4" />,
+                            desc: <Icon path={chevronDown} class="h-4 w-4" />,
                           }[header.column.getIsSorted() as string] ?? null}
                         </div>
                       </Show>

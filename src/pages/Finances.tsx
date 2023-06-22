@@ -52,13 +52,13 @@ const Finances: Component<{}> = (props) => {
         <button
           type="button"
           onClick={() => toggleYearModal(true)}
-          class="bg-white border border-slate-200 items-center justify-center flex h-full w-auto p-1 rounded hover:bg-slate-100 group-hover:shadow-inner group-hover:shadow-slate-300/50 active:bg-green-500 active:text-white"
+          class="bg-white border border-slate-300 items-center justify-center flex h-full w-auto p-1 rounded hover:bg-slate-100 group-hover:shadow-inner group-hover:shadow-slate-300/50 active:bg-green-500 active:text-white"
         >
           <Icon path={plusCircle} class="h-6" />
         </button>
         <button
           type="button"
-          class="bg-white border border-slate-200 items-center justify-center flex h-full w-auto p-1 rounded hover:bg-slate-100 group-hover:shadow-inner group-hover:shadow-slate-300/50 active:bg-red-500 active:text-white"
+          class="bg-white border border-slate-300 items-center justify-center flex h-full w-auto p-1 rounded hover:bg-slate-100 group-hover:shadow-inner group-hover:shadow-slate-300/50 active:bg-red-500 active:text-white"
         >
           <Icon path={trash} class="h-5 mr-1" /> Borrar selección{' '}
         </button>

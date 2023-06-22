@@ -1,5 +1,4 @@
-import { type } from "os";
-import { Component, createSignal } from "solid-js";
+import { Component } from "solid-js";
 
 interface Alert {
     state: string,
